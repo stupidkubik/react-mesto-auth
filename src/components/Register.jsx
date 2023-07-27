@@ -1,31 +1,45 @@
-import React from 'react';
-import Input from './Input';
+import { useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import useForm from '../hooks/useForm.js';
 import AppContext from '../contexts/AppContext.js';
+import LoginUserContext from '../contexts/LoginUserContext';
 import Header from './Header';
+import Input from './Input';
+import InfoTooltip from './InfoTooltip.jsx';
 
 function Register({ onSubmit, isOpen }) {
+  const { isLoading } = useContext(AppContext);
+  const { Paths } = useContext(LoginUserContext);
+
   const { values, handleChange, setValues } = useForm({
-    signup: '',
+    email: '',
     password: '',
   });
 
-  React.useEffect(() => {
-    setValues({ signup: '', password: '' });
-  }, [isOpen, setValues]);
+  useEffect(() => {
+    setValues({ email: '', password: '' });
+  }, [setValues]);
 
-  const { isLoading } = React.useContext(AppContext);
+  function handleSubmit(evt, values) {
+    evt.preventDefault();
+    onSubmit(values).then((res) => console.log(res)); //??????????
+    // if res.statusCode  201
+  }
+  //if ok => close InfoTooltip => setValues
+  //    navigate(Paths.Login);
+  let image;
+  let title;
 
   return (
     <>
-      <Header name={'Войти'} link={'/sign-in'} />
+      <Header name={'Войти'} link={Paths.Login} />
 
       <div className="App__signup">
         <h1 className="signup__title">Регистрация</h1>
         <form
           className={`signup__form`}
           name={`signup`}
-          onSubmit={onSubmit}
+          onSubmit={(evt) => handleSubmit(evt, values)}
           // noValidate
         >
           <Input
@@ -58,12 +72,17 @@ function Register({ onSubmit, isOpen }) {
         <div className="signin signup__signin">
           <p className="signin__title">
             Уже зарегистрированы?{' '}
-            <a className="signin__link" href="/sign-in">
+            <Link className="signin__link" to={Paths.Login}>
               Войти
-            </a>
+            </Link>
           </p>
         </div>
       </div>
+      {isOpen ? (
+        <InfoTooltip isOpen={isOpen} image={image} title={title} />
+      ) : (
+        ''
+      )}
     </>
   );
 }

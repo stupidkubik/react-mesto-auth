@@ -13,6 +13,6 @@
 }
 
 .signup__submit:hover {
-  background: rgba(256, 256, 256, 0.80);
+  background: rgba(256, 256, 256, 0.85);
   cursor: pointer;
 }

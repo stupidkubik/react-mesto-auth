@@ -1,6 +1,7 @@
-import React from 'react';
-import Card from './Card.jsx';
+import { useContext } from 'react';
 import CurrentUserContext from '../contexts/CurrentUserContext.js';
+import LoginUserContext from '../contexts/LoginUserContext';
+import Card from './Card.jsx';
 import Header from './Header';
 import Footer from './Footer.jsx';
 
@@ -12,12 +13,14 @@ function Main({
   onOpenImage, // Слушатель открытия картинки
   onDelete, // Слушатель подтверждения удаления
   handleCardLike,
+  handleExit,
 }) {
-  const currentUser = React.useContext(CurrentUserContext);
+  const currentUser = useContext(CurrentUserContext);
+  const { userLogin } = useContext(LoginUserContext);
 
   return (
     <>
-      <Header />
+      <Header name={userLogin.email} handleExit={handleExit} />
 
       <main className="content App__content">
         <section className="profile">

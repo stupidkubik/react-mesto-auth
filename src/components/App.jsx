@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router';
+import { Routes, Route, Navigate, useNavigate } from 'react-router';
 import AppContext from '../contexts/AppContext.js';
 import CurrentUserContext from '../contexts/CurrentUserContext.js';
+import LoginUserContext from '../contexts/LoginUserContext.js';
+import ProtectedRoute from './ProtectedRoute.jsx';
 
 import api from '../utils/api.js';
+import auth from '../utils/auth.js';
 import Register from './Register.jsx';
 import Login from './Login.jsx';
 import Main from './Main.jsx';
@@ -19,6 +22,7 @@ function App() {
   const [openPopupAvatar, setOpenPopupAvatar] = useState(false);
   const [openPopupDelete, setOpenPopupDelete] = useState(false);
   const [openPopupImage, setOpenPopupImage] = useState(false);
+  const [openPopupInfo, setOpenPopupInfo] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState({
     name: '',
@@ -27,8 +31,29 @@ function App() {
   const [deletedCardId, setDeletedCardId] = useState('');
 
   const [currentUser, setCurrentUser] = useState(null); // Загрузка данных текущего юзера
+  const [userLogin, setUserLogin] = useState(null); // Загрузка данных после регистрации
   const [cards, setCards] = useState([]); // Загрузка карточек с сервера
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Проверка сабмита на сервер
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Проверка юзера
+
+  const Paths = {
+    Home: '/',
+    Login: '/sign-in',
+    SignUp: '/sign-up',
+    Info: '/info',
+  };
+
+  const navigate = useNavigate();
+
+  // Проверка токена
+  useEffect(() => {
+    const jwt = localStorage.getItem('jwt');
+    // const jwt = 'localStorage.getItem';
+
+    if (jwt) {
+      checkToken(jwt);
+    } else navigate(Paths.SignUp);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     Promise.all([
@@ -51,6 +76,52 @@ function App() {
       .then(closeAllPopups)
       .catch(console.error)
       .finally(() => setIsLoading(false));
+  }
+
+  function handleRegistration(inputValues) {
+    setIsLoading(true);
+    return auth
+      .signUp(inputValues)
+      .then((res) => setUserLogin(res.data))
+      .then(setOpenPopupInfo(true))
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+    //?????????????
+  }
+
+  function handleLogin(evt, inputValues) {
+    evt.preventDefault();
+    function makeRequest() {
+      return auth.signIn(inputValues).then((res) => {
+        if (res.token) {
+          setIsLoggedIn(true);
+          localStorage.setItem('jwt', res.token);
+        }
+      });
+    }
+    handleSubmit(makeRequest);
+
+    // if res.statusCode 200
+  }
+
+  // Проверка валидности токена
+  function checkToken(jwt) {
+    function makeRequest() {
+      return auth.checkToken(jwt).then((res) => {
+        setUserLogin(res.data);
+        setIsLoggedIn(true);
+        navigate(Paths.Home);
+        console.log('checkToken');
+      });
+    }
+    handleSubmit(makeRequest);
+  }
+
+  // Логика выхода из профиля
+  function handleExit() {
+    localStorage.removeItem('jwt');
+    setIsLoggedIn(false);
+    setUserLogin(null);
   }
 
   // Логика попапа обновления профиля
@@ -114,14 +185,14 @@ function App() {
     }
   }
 
+  // Открытие попапа с картинкой
   function handleCardClick(evt) {
-    // Открытие попапа с картинкой
     setSelectedCard({ link: evt.target.src, name: evt.target.alt });
     setOpenPopupImage(true);
   }
 
+  // Обработчик лайков
   function handleCardLike(card) {
-    // Обработчик лайков
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
     function makeRequest() {
       return api.changeLikeCardStatus(card._id, isLiked).then((newCard) => {
@@ -133,13 +204,14 @@ function App() {
     handleSubmit(makeRequest);
   }
 
+  // Закрытие всех попапов
   function closeAllPopups() {
-    // Закрытие всех попапов
     setOpenPopupProfile(false);
     setOpenPopupAdd(false);
     setOpenPopupAvatar(false);
     setOpenPopupDelete(false);
     setOpenPopupImage(false);
+    setOpenPopupInfo(false);
 
     setSelectedCard({ name: '', link: '' });
     setDeletedCardId('');
@@ -148,52 +220,79 @@ function App() {
   return (
     <div className="App">
       <AppContext.Provider value={{ isLoading, closeAllPopups }}>
-        <CurrentUserContext.Provider value={currentUser}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Main
-                  cards={cards}
-                  onEditProfile={handleEditProfileClick}
-                  onAddPlace={handleAddPlaceClick}
-                  onEditAvatar={handleEditAvatarClick}
-                  onOpenImage={handleCardClick}
-                  onDelete={handleCardDelete}
-                  handleCardLike={handleCardLike}
-                />
-              }
+        <LoginUserContext.Provider value={{ isLoggedIn, Paths, userLogin }}>
+          <CurrentUserContext.Provider value={currentUser}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute
+                    component={Main}
+                    cards={cards}
+                    onEditProfile={handleEditProfileClick}
+                    onAddPlace={handleAddPlaceClick}
+                    onEditAvatar={handleEditAvatarClick}
+                    onOpenImage={handleCardClick}
+                    onDelete={handleCardDelete}
+                    handleCardLike={handleCardLike}
+                    handleExit={handleExit}
+                  />
+                }
+              />
+
+              <Route
+                path={Paths.SignUp}
+                element={
+                  <Register
+                    onSubmit={handleRegistration}
+                    isOpen={openPopupInfo}
+                  />
+                }
+              />
+
+              <Route
+                path={Paths.Login}
+                element={<Login onSubmit={handleLogin} />}
+              />
+
+              <Route
+                path="*"
+                element={
+                  isLoggedIn ? (
+                    <Navigate to={Paths.Login} />
+                  ) : (
+                    <Navigate to={Paths.SignUp} />
+                  )
+                }
+              />
+            </Routes>
+
+            <EditProfilePopup
+              isOpen={openPopupProfile}
+              onSubmit={handleEditProfileSubmit}
             />
-            <Route path="/sign-up" element={<Register />} />
-            <Route path="/sign-in" element={<Login />} />
-            <Route path="*" element={<Navigate to="/sign-in" />} />
-          </Routes>
 
-          <EditProfilePopup
-            isOpen={openPopupProfile}
-            onSubmit={handleEditProfileSubmit}
-          />
+            <AddPlacePopup
+              isOpen={openPopupAdd}
+              onSubmit={handleAddPlaceSubmit}
+            />
 
-          <AddPlacePopup
-            isOpen={openPopupAdd}
-            onSubmit={handleAddPlaceSubmit}
-          />
+            <EditAvatarPopup
+              isOpen={openPopupAvatar}
+              onSubmit={handleAvatarSubmit}
+            />
 
-          <EditAvatarPopup
-            isOpen={openPopupAvatar}
-            onSubmit={handleAvatarSubmit}
-          />
+            <PopupWithForm
+              isOpen={openPopupDelete}
+              onSubmit={handleCardDelete}
+              name="delete"
+              title="Вы уверены?"
+              buttonTitle="Да"
+            />
 
-          <PopupWithForm
-            isOpen={openPopupDelete}
-            onSubmit={handleCardDelete}
-            name="delete"
-            title="Вы уверены?"
-            buttonTitle="Да"
-          />
-
-          <ImagePopup card={selectedCard} isOpen={openPopupImage} />
-        </CurrentUserContext.Provider>
+            <ImagePopup card={selectedCard} isOpen={openPopupImage} />
+          </CurrentUserContext.Provider>
+        </LoginUserContext.Provider>
       </AppContext.Provider>
     </div>
   );

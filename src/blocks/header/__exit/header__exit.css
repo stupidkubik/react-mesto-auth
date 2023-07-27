@@ -1,0 +1,12 @@
+.header__exit {
+  text-decoration: none;
+  color: #A9A9A9;
+  text-align: right;
+  font-size: 18px;
+  line-height: 22px;
+  margin-left: 24px;
+}
+
+.header__exit:hover {
+  opacity: .6;
+}
