@@ -1,4 +1,4 @@
-import { useEffect, useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useForm from '../hooks/useForm.js';
 import AppContext from '../contexts/AppContext.js';
@@ -16,35 +16,44 @@ function Register({ onSubmit, isOpen }) {
     password: '',
   });
 
-  useEffect(() => {
-    setValues({ email: '', password: '' });
-  }, [setValues]);
+  const [tooltipInfo, setTooltipInfo] = useState({
+    popupTitle: '',
+    cssClass: '',
+  });
 
-  function handleSubmit(evt, values) {
+  async function handleSubmit(evt, values) {
     evt.preventDefault();
-    onSubmit(values).then((res) => console.log(res)); //??????????
-    // if res.statusCode  201
+    const resp = await onSubmit(values);
+
+    if (resp.data) {
+      setTooltipInfo({
+        popupTitle: 'Вы успешно зарегистрировались!',
+        cssClass: 'popup__info-success',
+      });
+      setValues({ email: '', password: '' });
+    } else {
+      setTooltipInfo({
+        popupTitle: 'Что-то пошло не так! Попробуйте ещё раз.',
+        cssClass: 'popup__info-fail',
+      });
+    }
   }
-  //if ok => close InfoTooltip => setValues
-  //    navigate(Paths.Login);
-  let image;
-  let title;
 
   return (
     <>
       <Header name={'Войти'} link={Paths.Login} />
 
-      <div className="App__signup">
-        <h1 className="signup__title">Регистрация</h1>
+      <div className="login App__login">
+        <h1 className="login__title">Регистрация</h1>
         <form
-          className={`signup__form`}
+          className={`login__form`}
           name={`signup`}
           onSubmit={(evt) => handleSubmit(evt, values)}
           // noValidate
         >
           <Input
             id={'signup-email'}
-            className={'signup__input signup__input_email'}
+            className={'login__input login__input_email'}
             type={'email'}
             name={'email'}
             placeholder={'Email'}
@@ -55,7 +64,7 @@ function Register({ onSubmit, isOpen }) {
 
           <Input
             id={'signup-password'}
-            className={'signup__input signup__input_password'}
+            className={'login__input login__input_password'}
             type={'password'}
             name={'password'}
             placeholder={'Пароль'}
@@ -65,21 +74,28 @@ function Register({ onSubmit, isOpen }) {
             value={values.password}
             onChange={handleChange}
           />
-          <button className="signup__submit" type="submit">
+
+          <button className="login__submit" type="submit">
             {isLoading ? '...' : 'Зарегистрироваться'}
           </button>
         </form>
-        <div className="signin signup__signin">
-          <p className="signin__title">
+
+        <div className="login__signin">
+          <p className="login__subtitle">
             Уже зарегистрированы?{' '}
-            <Link className="signin__link" to={Paths.Login}>
+            <Link className="login__link" to={Paths.Login}>
               Войти
             </Link>
           </p>
         </div>
       </div>
+
       {isOpen ? (
-        <InfoTooltip isOpen={isOpen} image={image} title={title} />
+        <InfoTooltip
+          isOpen={isOpen}
+          popupTitle={tooltipInfo.popupTitle}
+          cssClass={tooltipInfo.cssClass}
+        />
       ) : (
         ''
       )}

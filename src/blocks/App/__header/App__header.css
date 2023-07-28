@@ -22,7 +22,7 @@
 
 @media screen and (max-width: 530px) {
     .App__header {
-        margin: 28px 0 42px;
-        padding-bottom: 28px;
+        margin: 28px 0 40px;
+        padding: 0 30px 28px;
     }
 }

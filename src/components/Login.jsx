@@ -22,19 +22,19 @@ function Login({ onSubmit }) {
 
   return (
     <>
-      <Header name={'Зарегистрироваться'} link={Paths.SignUp} />
+      <Header name={'Регистрация'} link={Paths.SignUp} />
 
-      <div className="App__signup">
-        <h1 className="signup__title">Вход</h1>
+      <div className="login App__login">
+        <h1 className="login__title">Вход</h1>
         <form
-          className={`signup__form`}
+          className={`login__form`}
           name={`signin`}
           onSubmit={(evt) => onSubmit(evt, values)}
           // noValidate
         >
           <Input
             id={'signin-email'}
-            className={'signup__input signup__input_email'}
+            className={'login__input login__input_email'}
             type={'email'}
             name={'email'}
             placeholder={'Email'}
@@ -45,7 +45,7 @@ function Login({ onSubmit }) {
 
           <Input
             id={'signin-password'}
-            className={'signup__input signup__input_password'}
+            className={'login__input login__input_password'}
             type={'password'}
             name={'password'}
             placeholder={'Пароль'}
@@ -55,7 +55,7 @@ function Login({ onSubmit }) {
             value={values.password}
             onChange={handleChange}
           />
-          <button className="signup__submit" type="submit">
+          <button className="login__submit" type="submit">
             {isLoading ? '...' : 'Войти'}
           </button>
         </form>

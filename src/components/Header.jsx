@@ -1,13 +1,23 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import logo from '../images/logo/logo-white.svg';
 import { Link } from 'react-router-dom';
 import LoginUserContext from '../contexts/LoginUserContext.js';
 
 function Header({ name, link, handleExit }) {
   const { Paths } = useContext(LoginUserContext);
+  const [mobileWiev, useMobileWiev] = useState(true);
+
+  function toggleMenu() {
+    console.log('click');
+  }
 
   return (
-    <header className="header App__header">
+    <header
+      className="header App__header"
+      // className={`${
+      //   mobileWiev ? 'App__header_type_menu' : 'App__header'
+      // } header`}
+    >
       <Link to="/">
         <img className="header__logo" src={logo} alt="Логотип" />
       </Link>
@@ -15,8 +25,8 @@ function Header({ name, link, handleExit }) {
         <Link className="header__link" to={link}>
           {name}
         </Link>
-      ) : (
-        <div>
+      ) : !mobileWiev ? (
+        <div className={mobileWiev ? 'header__menu_type_hidden' : ''}>
           <div className="header__email">{name}</div>
           <Link
             className="header__exit"
@@ -27,6 +37,12 @@ function Header({ name, link, handleExit }) {
             Выйти
           </Link>
         </div>
+      ) : (
+        <button
+          className="header__menu"
+          type="button"
+          onClick={toggleMenu}
+        ></button>
       )}
     </header>
   );

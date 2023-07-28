@@ -40,7 +40,6 @@ function App() {
     Home: '/',
     Login: '/sign-in',
     SignUp: '/sign-up',
-    Info: '/info',
   };
 
   const navigate = useNavigate();
@@ -82,11 +81,19 @@ function App() {
     setIsLoading(true);
     return auth
       .signUp(inputValues)
-      .then((res) => setUserLogin(res.data))
-      .then(setOpenPopupInfo(true))
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-    //?????????????
+      .then((res) => {
+        setUserLogin(res.data);
+        return res;
+        //navigate to Login
+      })
+      .catch((err) => {
+        console.error(err);
+        return err;
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setOpenPopupInfo(true);
+      });
   }
 
   function handleLogin(evt, inputValues) {
@@ -100,8 +107,6 @@ function App() {
       });
     }
     handleSubmit(makeRequest);
-
-    // if res.statusCode 200
   }
 
   // Проверка валидности токена
@@ -122,6 +127,7 @@ function App() {
     localStorage.removeItem('jwt');
     setIsLoggedIn(false);
     setUserLogin(null);
+    navigate(Paths.Login);
   }
 
   // Логика попапа обновления профиля
@@ -241,6 +247,11 @@ function App() {
               />
 
               <Route
+                path={Paths.Login}
+                element={<Login onSubmit={handleLogin} />}
+              />
+
+              <Route
                 path={Paths.SignUp}
                 element={
                   <Register
@@ -251,19 +262,15 @@ function App() {
               />
 
               <Route
-                path={Paths.Login}
-                element={<Login onSubmit={handleLogin} />}
-              />
-
-              <Route
                 path="*"
-                element={
-                  isLoggedIn ? (
-                    <Navigate to={Paths.Login} />
-                  ) : (
-                    <Navigate to={Paths.SignUp} />
-                  )
-                }
+                element={<Navigate to={Paths.Home} replace />}
+                // element={
+                //   isLoggedIn ? (
+                //     <Navigate to={Paths.Login} />
+                //   ) : (
+                //     <Navigate to={Paths.SignUp} />
+                //   )
+                // }
               />
             </Routes>
 
