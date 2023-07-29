@@ -84,7 +84,6 @@ function App() {
       .then((res) => {
         setUserLogin(res.data);
         return res;
-        //navigate to Login
       })
       .catch((err) => {
         console.error(err);
@@ -116,7 +115,6 @@ function App() {
         setUserLogin(res.data);
         setIsLoggedIn(true);
         navigate(Paths.Home);
-        console.log('checkToken');
       });
     }
     handleSubmit(makeRequest);
