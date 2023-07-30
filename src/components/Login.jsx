@@ -14,8 +14,6 @@ function Login({ onSubmit }) {
     password: '',
   });
 
-  //resetform
-
   useEffect(() => {
     setValues({ email: userLogin?.email ?? '', password: '' });
   }, [setValues, userLogin]);

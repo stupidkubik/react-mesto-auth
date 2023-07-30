@@ -36,6 +36,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false); // Проверка сабмита на сервер
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Проверка юзера
 
+  // Константа с путями
   const Paths = {
     Home: '/',
     Login: '/sign-in',
@@ -47,7 +48,6 @@ function App() {
   // Проверка токена
   useEffect(() => {
     const jwt = localStorage.getItem('jwt');
-    // const jwt = 'localStorage.getItem';
 
     if (jwt) {
       checkToken(jwt);
@@ -77,6 +77,7 @@ function App() {
       .finally(() => setIsLoading(false));
   }
 
+  // Отдельная функция регистрации юзера
   function handleRegistration(inputValues) {
     setIsLoading(true);
     return auth
@@ -91,10 +92,11 @@ function App() {
       })
       .finally(() => {
         setIsLoading(false);
-        setOpenPopupInfo(true);
+        setOpenPopupInfo(true); //Открываем тултип
       });
   }
 
+  // Авторизация
   function handleLogin(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
@@ -259,17 +261,7 @@ function App() {
                 }
               />
 
-              <Route
-                path="*"
-                element={<Navigate to={Paths.Home} replace />}
-                // element={
-                //   isLoggedIn ? (
-                //     <Navigate to={Paths.Login} />
-                //   ) : (
-                //     <Navigate to={Paths.SignUp} />
-                //   )
-                // }
-              />
+              <Route path="*" element={<Navigate to={Paths.Home} replace />} />
             </Routes>
 
             <EditProfilePopup

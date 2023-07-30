@@ -16,6 +16,7 @@ function Register({ onSubmit, isOpen }) {
     password: '',
   });
 
+  //Стейт наполнения тултипа
   const [tooltipInfo, setTooltipInfo] = useState({
     popupTitle: '',
     cssClass: '',
@@ -25,6 +26,7 @@ function Register({ onSubmit, isOpen }) {
     evt.preventDefault();
     const resp = await onSubmit(values);
 
+    // Логика тултипа
     if (resp.data) {
       setTooltipInfo({
         popupTitle: 'Вы успешно зарегистрировались!',

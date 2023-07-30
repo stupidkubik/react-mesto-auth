@@ -5,7 +5,7 @@ import LoginUserContext from '../contexts/LoginUserContext.js';
 
 function Header({ name, link, handleExit }) {
   const { Paths } = useContext(LoginUserContext);
-  const [mobileWiev, setMobileWiev] = useState(false);
+  const [mobileView, setMobileView] = useState(false);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
 
   // Функция открытия бургер-меню
@@ -15,21 +15,22 @@ function Header({ name, link, handleExit }) {
   }
 
   // Определяем размер экрана и меняем бругер-меню
+  function changeView() {
+    const screenWidth = window.innerWidth;
+
+    if (screenWidth < 767) {
+      setMobileView(true);
+    } else setMobileView(false);
+  }
+
   useEffect(() => {
-    function changeWiev() {
-      const screenWidth = window.innerWidth;
-
-      if (screenWidth < 767) {
-        setMobileWiev(true);
-      } else setMobileWiev(false);
-    }
-
-    window.addEventListener('resize', changeWiev);
+    changeView();
+    window.addEventListener('resize', changeView);
 
     return () => {
-      window.removeEventListener('resize', changeWiev);
+      window.removeEventListener('resize', changeView);
     };
-  }, [mobileWiev]); //баг при первой загрузке
+  }, []);
 
   return (
     <header className="header App__header">
@@ -43,7 +44,7 @@ function Header({ name, link, handleExit }) {
         </Link>
       ) : (
         <>
-          <div className={mobileWiev ? 'header__menu_hidden' : 'header__menu'}>
+          <div className={mobileView ? 'header__menu_hidden' : 'header__menu'}>
             <div className="header__email">{name}</div>
             <Link
               className="header__exit"
@@ -57,7 +58,7 @@ function Header({ name, link, handleExit }) {
 
           <button
             className={
-              mobileWiev
+              mobileView
                 ? `${
                     menuIsOpen
                       ? 'header__burger-menu_opened'
