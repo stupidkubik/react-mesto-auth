@@ -10,7 +10,6 @@ function Header({ name, link, handleExit }) {
 
   // Функция открытия бургер-меню
   function toggleMenu() {
-    document.querySelector('header').classList.toggle('header_opened');
     setMenuIsOpen(!menuIsOpen);
   }
 
@@ -33,7 +32,9 @@ function Header({ name, link, handleExit }) {
   }, []);
 
   return (
-    <header className="header App__header">
+    <header
+      className={`header App__header ${menuIsOpen ? 'header_opened' : ''}`}
+    >
       <Link to="/">
         <img className="header__logo" src={logo} alt="Логотип" />
       </Link>

@@ -1,44 +1,33 @@
 import { useContext } from 'react';
 import AppContext from '../contexts/AppContext.js';
-import usePopupClose from '../hooks/usePopupClose.js';
+import Popup from './Popup.jsx';
 
 function PopupWithForm({
   name, // Название класса попапа
   title, // Заголовок попапа
   buttonTitle = 'Сохранить', // Название кнопки сабмита
-  onSubmit,
   isOpen,
+  onSubmit,
   children,
 }) {
-  const { isLoading, closeAllPopups } = useContext(AppContext);
-
-  usePopupClose(isOpen, closeAllPopups);
+  const { isLoading } = useContext(AppContext);
 
   return (
-    <div className={`popup popup_type_${name} ${isOpen ? 'popup_opened' : ''}`}>
-      <div className="popup__container">
-        <h2 className="popup__title">{title}</h2>
+    <Popup isOpen={isOpen} name={name}>
+      <h2 className="popup__title">{title}</h2>
 
-        <button
-          className="popup__close"
-          type="button"
-          aria-label="Закрыть окно"
-          onClick={closeAllPopups}
-        ></button>
-
-        <form
-          className={`popup__form popup__form_${name}`}
-          name={`${name}-form`}
-          onSubmit={onSubmit}
-          // noValidate
-        >
-          {children}
-          <button className="popup__submit" type="submit">
-            {isLoading ? '...' : buttonTitle}
-          </button>
-        </form>
-      </div>
-    </div>
+      <form
+        className={`popup__form popup__form_${name}`}
+        name={`${name}-form`}
+        onSubmit={onSubmit}
+        // noValidate
+      >
+        {children}
+        <button className="popup__submit" type="submit">
+          {isLoading ? '...' : buttonTitle}
+        </button>
+      </form>
+    </Popup>
   );
 }
 

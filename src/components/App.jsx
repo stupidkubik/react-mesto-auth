@@ -9,6 +9,7 @@ import api from '../utils/api.js';
 import auth from '../utils/auth.js';
 import Register from './Register.jsx';
 import Login from './Login.jsx';
+import InfoTooltip from './InfoTooltip.jsx';
 import Main from './Main.jsx';
 import PopupWithForm from './PopupWithForm.jsx';
 import ImagePopup from './ImagePopup.jsx';
@@ -23,6 +24,12 @@ function App() {
   const [openPopupDelete, setOpenPopupDelete] = useState(false);
   const [openPopupImage, setOpenPopupImage] = useState(false);
   const [openPopupInfo, setOpenPopupInfo] = useState(false);
+
+  //Стейт наполнения тултипа
+  const [tooltipInfo, setTooltipInfo] = useState({
+    popupTitle: '',
+    cssClass: '',
+  });
 
   const [selectedCard, setSelectedCard] = useState({
     name: '',
@@ -52,21 +59,23 @@ function App() {
     if (jwt) {
       checkToken(jwt);
     } else navigate(Paths.SignUp);
-  }, [isLoggedIn]);
+  }, []);
 
   useEffect(() => {
-    Promise.all([
-      api.getCards(), // Запрашиваем массив карточек с сервера
-      api.getUserInfo(), // Запрашиваем данные юзера
-    ])
-      .then(([cardsData, user]) => {
-        setCurrentUser(user);
-        setCards(cardsData);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+    if (isLoggedIn) {
+      Promise.all([
+        api.getCards(), // Запрашиваем массив карточек с сервера
+        api.getUserInfo(), // Запрашиваем данные юзера
+      ])
+        .then(([cardsData, user]) => {
+          setCurrentUser(user);
+          setCards(cardsData);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }, [isLoggedIn]);
 
   // Общая функция запроса к серверу
   function handleSubmit(request) {
@@ -78,17 +87,27 @@ function App() {
   }
 
   // Отдельная функция регистрации юзера
-  function handleRegistration(inputValues) {
+  function handleRegistration(evt, inputValues) {
+    evt.preventDefault();
     setIsLoading(true);
-    return auth
+
+    auth
       .signUp(inputValues)
       .then((res) => {
         setUserLogin(res.data);
-        return res;
+        setTooltipInfo({
+          popupTitle: 'Вы успешно зарегистрировались!',
+          cssClass: 'popup__info-success',
+        });
+        navigate(Paths.Login);
       })
+      // Если ошибка то заполняем тултип
       .catch((err) => {
+        setTooltipInfo({
+          popupTitle: 'Что-то пошло не так! Попробуйте ещё раз.',
+          cssClass: 'popup__info-fail',
+        });
         console.error(err);
-        return err;
       })
       .finally(() => {
         setIsLoading(false);
@@ -104,6 +123,7 @@ function App() {
         if (res.token) {
           setIsLoggedIn(true);
           localStorage.setItem('jwt', res.token);
+          navigate(Paths.Home);
         }
       });
     }
@@ -177,11 +197,9 @@ function App() {
       // Если попап уже открыт
       evt.preventDefault();
       function makeRequest() {
-        return api
-          .deleteCard(deletedCardId)
-          .then(
-            setCards((cards) => cards.filter((c) => c._id !== deletedCardId))
-          );
+        return api.deleteCard(deletedCardId).then(() => {
+          setCards((cards) => cards.filter((c) => c._id !== deletedCardId));
+        });
       }
       handleSubmit(makeRequest);
     } else {
@@ -255,14 +273,16 @@ function App() {
                 path={Paths.SignUp}
                 element={
                   <Register
-                    onSubmit={handleRegistration}
                     isOpen={openPopupInfo}
+                    onSubmit={handleRegistration}
                   />
                 }
               />
 
               <Route path="*" element={<Navigate to={Paths.Home} replace />} />
             </Routes>
+
+            <InfoTooltip isOpen={openPopupInfo} tooltipInfo={tooltipInfo} />
 
             <EditProfilePopup
               isOpen={openPopupProfile}

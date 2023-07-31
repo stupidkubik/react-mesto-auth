@@ -1,11 +1,11 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useForm from '../hooks/useForm.js';
 import AppContext from '../contexts/AppContext.js';
 import LoginUserContext from '../contexts/LoginUserContext';
 import Header from './Header';
 import Input from './Input';
-import InfoTooltip from './InfoTooltip.jsx';
+// import InfoTooltip from './InfoTooltip.jsx';
 
 function Register({ onSubmit, isOpen }) {
   const { isLoading } = useContext(AppContext);
@@ -16,30 +16,9 @@ function Register({ onSubmit, isOpen }) {
     password: '',
   });
 
-  //Стейт наполнения тултипа
-  const [tooltipInfo, setTooltipInfo] = useState({
-    popupTitle: '',
-    cssClass: '',
-  });
-
-  async function handleSubmit(evt, values) {
-    evt.preventDefault();
-    const resp = await onSubmit(values);
-
-    // Логика тултипа
-    if (resp.data) {
-      setTooltipInfo({
-        popupTitle: 'Вы успешно зарегистрировались!',
-        cssClass: 'popup__info-success',
-      });
-      setValues({ email: '', password: '' });
-    } else {
-      setTooltipInfo({
-        popupTitle: 'Что-то пошло не так! Попробуйте ещё раз.',
-        cssClass: 'popup__info-fail',
-      });
-    }
-  }
+  useEffect(() => {
+    setValues({ email: '', password: '' });
+  }, [isOpen, setValues]);
 
   return (
     <>
@@ -50,7 +29,7 @@ function Register({ onSubmit, isOpen }) {
         <form
           className={`login__form`}
           name={`signup`}
-          onSubmit={(evt) => handleSubmit(evt, values)}
+          onSubmit={(evt) => onSubmit(evt, values)}
           // noValidate
         >
           <Input
@@ -91,16 +70,6 @@ function Register({ onSubmit, isOpen }) {
           </p>
         </div>
       </div>
-
-      {isOpen ? (
-        <InfoTooltip
-          isOpen={isOpen}
-          popupTitle={tooltipInfo.popupTitle}
-          cssClass={tooltipInfo.cssClass}
-        />
-      ) : (
-        ''
-      )}
     </>
   );
 }
